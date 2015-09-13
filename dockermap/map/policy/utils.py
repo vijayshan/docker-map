@@ -133,6 +133,25 @@ def get_shared_volume_path(container_map, volume, instance=None):
     raise KeyError("No host-volume information found for alias {0}.".format(volume))
 
 
+def get_environment(container_map):
+    """
+    generates an environment variable list for the container
+
+    :param container_map: Container map.
+    :type container_map: dockermap.map.container.ContainerMap
+    :return: list of environment variables in the 'key=val' format
+    """
+    return_val = []
+    val_dict = container_map.get("environment")
+    if isinstance(val_dict, dict):
+        # in the dictiorary format
+        for k,v in val_dict:
+            return_val.append("{0}={1}".format(k,v))
+    elif isinstance(val_dict, list):
+        return_val = val_dict
+
+    return return_val
+
 def get_volumes(container_map, config):
     """
     Generates volume paths for the ``volumes`` argument during container creation.

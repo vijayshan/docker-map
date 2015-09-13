@@ -52,6 +52,7 @@ class ContainerConfiguration(object):
         self._image = NotSet
         self._instances = []
         self._shares = []
+        self._environment = []
         self._binds = []
         self._uses = []
         self._links_to = []
@@ -228,6 +229,18 @@ class ContainerConfiguration(object):
         :rtype: list[PortBinding]
         """
         return self._exposes
+
+    @property
+    def environment(self):
+        return self._environment
+
+    @environment.setter
+    def environment(self, value):
+        self._environment = value
+
+    @environment.deleter
+    def environment(self):
+        self._environment = []
 
     @exposes.setter
     def exposes(self, value):

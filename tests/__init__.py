@@ -66,6 +66,10 @@ MAP_DATA_2 = {
             'attaches': 'app_log',
             'user': 'app_user',
             'permissions': 'u=rwX,g=rX,o=',
+            'environment': [
+                "DBDATA=/dbdata",
+                "DBDATA1=/dbdata1"
+            ]
         },
         'server': {
             'extends': 'abstract_config',
@@ -74,6 +78,10 @@ MAP_DATA_2 = {
             },
             'attaches': 'server_log',
             'user': 'server_user',
+            'environment': {
+                "DBDATA":"/dbdata",
+                "DBDATA1":"/dbdata1"
+            },
             'exposes': {
                 8443: (8443, 'private'),
             },

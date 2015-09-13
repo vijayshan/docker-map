@@ -27,6 +27,7 @@ class TestPolicyClientKwargs(unittest.TestCase):
             name=c_name,
             image='registry.example.com/nginx',
             volumes=['/etc/nginx'],
+            environment=[],
             user=None,
             ports=[80, 443, 22],
             hostname='main.web_server',
@@ -65,6 +66,7 @@ class TestPolicyClientKwargs(unittest.TestCase):
         self.assertDictEqual(kwargs, dict(
             name=c_name,
             image='registry.example.com/app',
+            environment=[],
             volumes=[
                 '/var/lib/app/config',
                 '/var/lib/app/data'

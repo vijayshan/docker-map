@@ -146,3 +146,6 @@ class TestConfig(unittest.TestCase):
 
     def test_partial_extended_map(self):
         self.assertEqual(self.ext_simple.host.root, MAP_DATA_3.get('host_root'))
+
+    def test_environment_config(self):
+        cfg1_1 = self.sample_map.get_existing('worker')
