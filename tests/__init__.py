@@ -17,6 +17,7 @@ MAP_DATA_1 = {
             443: 443,
         },
         'stop_timeout': 5,
+
     },
     'app_server': {
         'image': 'app',
@@ -66,10 +67,7 @@ MAP_DATA_2 = {
             'attaches': 'app_log',
             'user': 'app_user',
             'permissions': 'u=rwX,g=rX,o=',
-            'environment': [
-                "DBDATA=/dbdata",
-                "DBDATA1=/dbdata1"
-            ]
+
         },
         'server': {
             'extends': 'abstract_config',
@@ -78,10 +76,7 @@ MAP_DATA_2 = {
             },
             'attaches': 'server_log',
             'user': 'server_user',
-            'environment': {
-                "DBDATA":"/dbdata",
-                "DBDATA1":"/dbdata1"
-            },
+
             'exposes': {
                 8443: (8443, 'private'),
             },
@@ -184,4 +179,63 @@ MAP_DATA_3 = {
 
 CLIENT_DATA_1 = {
     'interfaces': {'private': '10.0.0.11'},
+}
+
+MAP_DATA_4 = {
+    'repository': 'registry.example.com',
+    'host_root': '/var/lib/site',
+    'web_server': { # Configure container creation and startup
+        'image': 'nginx',
+        # If volumes are not shared with any other container, assigning
+        # an alias in "volumes" is possible, but not neccessary:
+        'binds': {'/etc/nginx': ('config/nginx', 'ro')},
+        'uses': 'app_server_socket',
+        'attaches': 'web_log',
+        'links': ['app_server.instance1', 'app_server.instance2'],
+        'exposes': {
+            80: 80,
+            443: 443,
+        },
+        'stop_timeout': 5,
+        'environment': {
+                "DBDATA":"/dbdata",
+                "DBDATA1":"/dbdata1"
+            },
+    },
+    'app_server': {
+        'image': 'app',
+        'instances': ('instance1', 'instance2'),
+        'exposes': [8880],
+        'binds': (
+            {'app_config': 'ro'},
+            'app_data',
+        ),
+        'attaches': ('app_log', 'app_server_socket'),
+        'user': 2000,
+        'permissions': 'u=rwX,g=rX,o=',
+        'environment': [
+                "DBDATA=/dbdata",
+                "DBDATA1=/dbdata1"
+            ]
+    },
+    'app_extra': {
+        'network': 'app_server.instance1',
+    },
+    'volumes': { # Configure volume paths inside containers
+        'web_log': '/var/log/nginx',
+        'app_server_socket': '/var/lib/app/socket',
+        'app_config': '/var/lib/app/config',
+        'app_log': '/var/lib/app/log',
+        'app_data': '/var/lib/app/data',
+    },
+    'host': { # Configure volume paths on the Docker host
+        'app_config': {
+            'instance1': 'config/app1',
+            'instance2': 'config/app2',
+        },
+        'app_data': {
+            'instance1': 'data/app1',
+            'instance2': 'data/app2',
+        },
+    },
 }

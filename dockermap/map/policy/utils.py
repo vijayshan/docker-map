@@ -133,7 +133,7 @@ def get_shared_volume_path(container_map, volume, instance=None):
     raise KeyError("No host-volume information found for alias {0}.".format(volume))
 
 
-def get_environment(container_map):
+def get_environment(container_map, container_config):
     """
     generates an environment variable list for the container
 
@@ -142,10 +142,10 @@ def get_environment(container_map):
     :return: list of environment variables in the 'key=val' format
     """
     return_val = []
-    val_dict = container_map.get("environment")
+    val_dict = container_config.environment
     if isinstance(val_dict, dict):
         # in the dictiorary format
-        for k,v in val_dict:
+        for k,v in val_dict.iteritems():
             return_val.append("{0}={1}".format(k,v))
     elif isinstance(val_dict, list):
         return_val = val_dict

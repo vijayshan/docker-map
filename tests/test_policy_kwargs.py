@@ -7,7 +7,7 @@ from docker.utils.utils import create_host_config
 from dockermap.api import ClientConfiguration, ContainerMap
 from dockermap.map.policy.base import BasePolicy
 
-from tests import MAP_DATA_1, CLIENT_DATA_1
+from tests import MAP_DATA_1, CLIENT_DATA_1, MAP_DATA_4
 
 
 class TestPolicyClientKwargs(unittest.TestCase):
@@ -15,6 +15,7 @@ class TestPolicyClientKwargs(unittest.TestCase):
         self.maxDiff = 2048
         self.map_name = 'main'
         self.sample_map = ContainerMap('main', MAP_DATA_1)
+        self.sample_map_2 = ContainerMap('main2', MAP_DATA_4)
         self.sample_client_config = ClientConfiguration(**CLIENT_DATA_1)
 
     def test_create_kwargs_without_host_config(self):
@@ -190,4 +191,62 @@ class TestPolicyClientKwargs(unittest.TestCase):
                                               c_name, None)
         self.assertDictEqual(kwargs, dict(
             container=c_name,
+        ))
+
+    def test_container_environment_as_list_kwargs(self):
+        cfg_name = 'app_server'
+        cfg = self.sample_map_2.get_existing(cfg_name)
+        c_name = 'main2.app_server'
+        hc_kwargs = dict(binds={'/new_h': {'bind': '/new_c', 'ro': False}})
+        kwargs = BasePolicy.get_create_kwargs(self.sample_map, cfg_name, cfg, '__default__',
+                                              self.sample_client_config, c_name, 'instance1',
+                                              include_host_config=True, kwargs=dict(host_config=hc_kwargs))
+        self.assertDictEqual(kwargs, dict(
+            name=c_name,
+            image='registry.example.com/app',
+            environment=[
+                "DBDATA=/dbdata",
+                "DBDATA1=/dbdata1"
+            ],
+            volumes=[
+                u'/var/lib/app/config',
+                u'/var/lib/app/data'
+            ],
+            user='2000',
+            hostname='main2.app_server',
+            domainname=None,
+            ports=[8880],
+            host_config=create_host_config(
+                links={},
+                binds={
+                    '/var/lib/site/config/app1': {'bind': '/var/lib/app/config', 'ro': True},
+                    '/var/lib/site/data/app1': {'bind': '/var/lib/app/data', 'ro': False},
+                    '/new_h': {'bind': '/new_c', 'ro': False},
+                },
+                volumes_from=['main.app_log', 'main.app_server_socket'],
+                port_bindings={},
+            ),
+        ))
+
+    def test_container_environment_as_dict_kwargs(self):
+        cfg_name = 'web_server'
+        cfg = self.sample_map_2.get_existing(cfg_name)
+        c_name = 'main2.web_server'
+        hc_kwargs = dict(binds={'/new_h': {'bind': '/new_c', 'ro': False}})
+        kwargs = BasePolicy.get_create_kwargs(self.sample_map, cfg_name, cfg, '__default__',
+                                              self.sample_client_config, c_name, 'instance1',
+                                              include_host_config=False, kwargs=dict(host_config=hc_kwargs))
+        self.assertDictEqual(kwargs, dict(
+            name=c_name,
+            image='registry.example.com/nginx',
+            environment=[
+                "DBDATA=/dbdata",
+                "DBDATA1=/dbdata1"
+            ],
+            volumes=[u'/etc/nginx'],
+            user=None,
+            hostname='main2.web_server',
+            domainname=None,
+            ports=[80,443],
+
         ))

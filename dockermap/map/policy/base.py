@@ -218,7 +218,7 @@ class BasePolicy(with_metaclass(ABCMeta, object)):
                    for port_binding in container_config.exposes if port_binding.exposed_port],
             hostname=cls.get_hostname(client_name, container_name) if container_map.set_hostname else None,
             domainname=cls.get_domainname(container_map, container_config, client_config),
-            environment=get_environment(container_map)
+            environment=get_environment(container_map, container_config)
         )
         if container_config.network == 'disabled':
             c_kwargs['network_disabled'] = True
